@@ -23,6 +23,9 @@ const copy = {
 
 let state = createGameState(0, "mouse");
 let splashOverlayTimer = null;
+let audioCtx = null;
+let musicEnabled = false;
+let musicLoopTimer = null;
 
 const levelNameEl = document.getElementById("levelName");
 const messageEl = document.getElementById("message");
@@ -34,6 +37,7 @@ const heroIntroEl = document.getElementById("heroIntro");
 const resultEl = document.getElementById("result");
 const nextLevelBtn = document.getElementById("nextLevelBtn");
 const resetBtn = document.getElementById("resetBtn");
+const musicToggleBtn = document.getElementById("musicToggleBtn");
 const characterButtons = [...document.querySelectorAll("[data-character]")];
 const controlButtons = [...document.querySelectorAll("[data-dir]")];
 
@@ -83,10 +87,77 @@ function render() {
   splashEl.textContent = state.splashCount;
   resultEl.textContent = state.rescued ? "哈哈，成功逃出迷宮！" : "繼續前進，別被噴濕！";
   nextLevelBtn.disabled = !state.rescued;
+  musicToggleBtn.textContent = musicEnabled ? "關閉背景音效" : "開啟背景音效";
 
   characterButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.character === state.character);
   });
+}
+
+function ensureAudioContext() {
+  if (!audioCtx) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return null;
+    audioCtx = new AudioContextClass();
+  }
+  return audioCtx;
+}
+
+function stopBackgroundMusic() {
+  window.clearTimeout(musicLoopTimer);
+  musicLoopTimer = null;
+  if (audioCtx && audioCtx.state === "running") {
+    audioCtx.suspend();
+  }
+}
+
+function playMusicPhrase() {
+  const ctx = ensureAudioContext();
+  if (!ctx) return;
+
+  const gain = ctx.createGain();
+  gain.gain.value = 0.025;
+  gain.connect(ctx.destination);
+
+  const now = ctx.currentTime;
+  const notes = [261.63, 329.63, 392.0, 329.63];
+
+  notes.forEach((freq, index) => {
+    const osc = ctx.createOscillator();
+    osc.type = index % 2 === 0 ? "sine" : "triangle";
+    osc.frequency.value = freq;
+    osc.connect(gain);
+    const start = now + index * 0.55;
+    const stop = start + 0.5;
+    osc.start(start);
+    osc.stop(stop);
+  });
+}
+
+function startBackgroundMusic() {
+  const ctx = ensureAudioContext();
+  if (!ctx) return;
+  if (ctx.state === "suspended") {
+    ctx.resume();
+  }
+
+  window.clearTimeout(musicLoopTimer);
+  playMusicPhrase();
+  musicLoopTimer = window.setTimeout(() => {
+    if (musicEnabled) {
+      startBackgroundMusic();
+    }
+  }, 2100);
+}
+
+function toggleMusic() {
+  musicEnabled = !musicEnabled;
+  if (musicEnabled) {
+    startBackgroundMusic();
+  } else {
+    stopBackgroundMusic();
+  }
+  render();
 }
 
 function splashBoard() {
@@ -130,6 +201,7 @@ nextLevelBtn.addEventListener("click", () => {
 });
 
 resetBtn.addEventListener("click", restartLevel);
+musicToggleBtn.addEventListener("click", toggleMusic);
 
 window.addEventListener("keydown", (event) => {
   const map = {
