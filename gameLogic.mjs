@@ -71,6 +71,40 @@ function listPathCells(rows) {
   return cells;
 }
 
+function keyFor(position) {
+  return `${position.row},${position.col}`;
+}
+
+function findSolutionPath(rows, start, goal) {
+  const queue = [start];
+  const parents = new Map();
+  parents.set(keyFor(start), null);
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (current.row === goal.row && current.col === goal.col) {
+      break;
+    }
+
+    Object.values(DIRECTION_DELTAS).forEach((delta) => {
+      const next = { row: current.row + delta.row, col: current.col + delta.col };
+      if (readTile(rows, next) === "#") return;
+      const nextKey = keyFor(next);
+      if (parents.has(nextKey)) return;
+      parents.set(nextKey, current);
+      queue.push(next);
+    });
+  }
+
+  const path = [];
+  let current = goal;
+  while (current) {
+    path.push(current);
+    current = parents.get(keyFor(current)) || null;
+  }
+  return path.reverse();
+}
+
 export function generateMazeLevel(stage = 0, random = Math.random, difficultyKey = "normal") {
   const difficulty = resolveDifficulty(difficultyKey);
   const size = sizeForStage(stage + difficulty.stageOffset);
@@ -122,15 +156,27 @@ export function generateMazeLevel(stage = 0, random = Math.random, difficultyKey
   grid[size - 2][size - 2] = "G";
 
   const rows = grid.map((row) => row.join(""));
+  const start = { row: 1, col: 1 };
+  const goal = { row: size - 2, col: size - 2 };
+  const solutionKeys = new Set(
+    findSolutionPath(rows, start, goal).map((position) => keyFor(position))
+  );
   const floorCells = listPathCells(rows).filter(({ tile, row, col }) => {
-    return tile === "." && !(row === 1 && col === 1) && !(row === size - 2 && col === size - 2);
+    return (
+      tile === "." &&
+      !solutionKeys.has(keyFor({ row, col })) &&
+      !(row === start.row && col === start.col) &&
+      !(row === goal.row && col === goal.col)
+    );
   });
 
   const baseTrapCount = Math.max(1, Math.floor(stage / 2) + 1);
-  const trapCount = Math.min(
-    Math.max(1, Math.round(baseTrapCount * difficulty.trapMultiplier)),
-    Math.max(1, Math.floor(floorCells.length / 8))
-  );
+  const trapCount = floorCells.length === 0
+    ? 0
+    : Math.min(
+        Math.max(1, Math.round(baseTrapCount * difficulty.trapMultiplier)),
+        Math.max(1, Math.floor(floorCells.length / 8))
+      );
   shuffle(floorCells, random)
     .slice(0, trapCount)
     .forEach(({ row, col }) => {
@@ -141,8 +187,8 @@ export function generateMazeLevel(stage = 0, random = Math.random, difficultyKey
   return {
     size,
     rows: finalRows,
-    start: { row: 1, col: 1 },
-    goal: { row: size - 2, col: size - 2 }
+    start,
+    goal
   };
 }
 

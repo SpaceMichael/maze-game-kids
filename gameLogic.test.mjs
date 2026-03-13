@@ -48,11 +48,60 @@ function hasPath(rows) {
   return false;
 }
 
+function getSolutionPath(rows) {
+  const start = findMarker(rows, "S");
+  const goal = findMarker(rows, "G");
+  const queue = [start];
+  const parents = new Map([[`${start.row},${start.col}`, null]]);
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (current.row === goal.row && current.col === goal.col) break;
+
+    [
+      { row: -1, col: 0 },
+      { row: 1, col: 0 },
+      { row: 0, col: -1 },
+      { row: 0, col: 1 }
+    ].forEach((delta) => {
+      const next = { row: current.row + delta.row, col: current.col + delta.col };
+      if (
+        next.row < 0 ||
+        next.row >= rows.length ||
+        next.col < 0 ||
+        next.col >= rows[0].length
+      ) {
+        return;
+      }
+      if (rows[next.row][next.col] === "#") return;
+      const key = `${next.row},${next.col}`;
+      if (parents.has(key)) return;
+      parents.set(key, current);
+      queue.push(next);
+    });
+  }
+
+  const path = [];
+  let current = goal;
+  while (current) {
+    path.push(current);
+    current = parents.get(`${current.row},${current.col}`) || null;
+  }
+  return path.reverse();
+}
+
 test("generated maze is always solvable", () => {
   for (let stage = 0; stage < 5; stage += 1) {
     const level = generateMazeLevel(stage, () => 0.42);
     assert.equal(hasPath(level.rows), true);
   }
+});
+
+test("traps are never placed on the required solution path", () => {
+  const level = generateMazeLevel(4, () => 0.42, "hard");
+  const path = getSolutionPath(level.rows);
+  const pathTiles = path.map(({ row, col }) => level.rows[row][col]);
+  assert.equal(pathTiles.includes("T"), false);
 });
 
 test("game starts at the generated start tile", () => {

@@ -31,7 +31,6 @@ const ui = {
     },
     stepsLabel: "步數",
     splashLabel: "被噴中",
-    tipsTitle: "搞笑提示",
     mazeTitle: "隨機迷宮地圖",
     controlsTitle: "移動主角",
     controlsNote: "也可以用鍵盤方向鍵操作。",
@@ -44,17 +43,6 @@ const ui = {
     legendStart: "🏁 起點",
     legendGoal: "🧀/🍯 出口",
     boardLabel: "迷宮",
-    messages: {
-      start: "準備好了嗎？新迷宮已經出現！",
-      moved: "繼續前進，出口就在附近！",
-      blocked: "哎呀，撞到牆了，轉個方向吧！",
-      trap: "Splash！被噴到全身濕晒，回起點再來！",
-      win: "哈哈，成功逃出迷宮！下一關會更大！",
-      next: "新迷宮來了，而且更大更刺激！",
-      restart: "重新來過，小心不要踩到水陷阱！"
-    },
-    resultIdle: "繼續前進，別被噴濕！",
-    resultWin: "哈哈，成功逃出迷宮！",
     goalPrefix: "目標：",
     stageCounter: "第 {current} 關",
     sizeCounter: "迷宮大小 {size} x {size}"
@@ -89,7 +77,6 @@ const ui = {
     },
     stepsLabel: "Steps",
     splashLabel: "Splashes",
-    tipsTitle: "Funny Tips",
     mazeTitle: "Random Maze Map",
     controlsTitle: "Move the Hero",
     controlsNote: "You can also use the arrow keys on a keyboard.",
@@ -102,17 +89,6 @@ const ui = {
     legendStart: "🏁 Start",
     legendGoal: "🧀/🍯 Goal",
     boardLabel: "maze",
-    messages: {
-      start: "Ready? A fresh maze is waiting!",
-      moved: "Keep going. The exit is nearby!",
-      blocked: "Boing! That wall says no way.",
-      trap: "Splash! The water trap sent you back to start.",
-      win: "Hooray! You escaped. The next maze will be bigger!",
-      next: "A bigger maze is ready. Let's go!",
-      restart: "Fresh start! Try to stay dry this time."
-    },
-    resultIdle: "Keep moving and stay dry!",
-    resultWin: "Hooray! You escaped the maze!",
     goalPrefix: "Goal: ",
     stageCounter: "Stage {current}",
     sizeCounter: "Maze size {size} x {size}"
@@ -126,7 +102,6 @@ let splashOverlayTimer = null;
 let audioCtx = null;
 let musicEnabled = false;
 let musicLoopTimer = null;
-let currentEvent = "start";
 
 const pageTitleEl = document.getElementById("pageTitle");
 const pageIntroEl = document.getElementById("pageIntro");
@@ -144,7 +119,6 @@ const bearNameEl = document.getElementById("bearName");
 const bearDescEl = document.getElementById("bearDesc");
 const stepsLabelEl = document.getElementById("stepsLabel");
 const splashLabelEl = document.getElementById("splashLabel");
-const tipsTitleEl = document.getElementById("tipsTitle");
 const mazeTitleEl = document.getElementById("mazeTitle");
 const controlsTitleEl = document.getElementById("controlsTitle");
 const controlsNoteEl = document.getElementById("controlsNote");
@@ -153,13 +127,11 @@ const legendTrapEl = document.getElementById("legendTrap");
 const legendStartEl = document.getElementById("legendStart");
 const legendGoalEl = document.getElementById("legendGoal");
 const levelNameEl = document.getElementById("levelName");
-const messageEl = document.getElementById("message");
 const boardEl = document.getElementById("board");
 const stepsEl = document.getElementById("steps");
 const splashEl = document.getElementById("splashCount");
 const heroNameEl = document.getElementById("heroName");
 const heroIntroEl = document.getElementById("heroIntro");
-const resultEl = document.getElementById("result");
 const nextLevelBtn = document.getElementById("nextLevelBtn");
 const resetBtn = document.getElementById("resetBtn");
 const musicToggleBtn = document.getElementById("musicToggleBtn");
@@ -196,7 +168,6 @@ function renderStaticText() {
   bearDescEl.textContent = text.characters.bear.buttonDesc;
   stepsLabelEl.textContent = text.stepsLabel;
   splashLabelEl.textContent = text.splashLabel;
-  tipsTitleEl.textContent = text.tipsTitle;
   mazeTitleEl.textContent = text.mazeTitle;
   controlsTitleEl.textContent = text.controlsTitle;
   controlsNoteEl.textContent = text.controlsNote;
@@ -262,8 +233,6 @@ function renderStatus() {
   heroIntroEl.textContent = `${hero.intro} ${text.goalPrefix}${hero.goal}`;
   stepsEl.textContent = state.steps;
   splashEl.textContent = state.splashCount;
-  messageEl.textContent = text.messages[currentEvent];
-  resultEl.textContent = state.rescued ? text.resultWin : text.resultIdle;
   nextLevelBtn.disabled = !state.rescued;
 
   characterButtons.forEach((button) => {
@@ -354,7 +323,6 @@ function splashBoard() {
 function step(direction) {
   const result = movePlayer(state, direction);
   state = result.state;
-  currentEvent = result.event;
   if (result.event === "trap") {
     splashBoard();
   }
@@ -363,20 +331,17 @@ function step(direction) {
 
 function restartLevel() {
   state = createGameState(state.levelIndex, state.character, { difficultyKey });
-  currentEvent = "restart";
   render();
 }
 
 function chooseCharacter(character) {
   state = createGameState(0, character, { difficultyKey });
-  currentEvent = "start";
   render();
 }
 
 function chooseDifficulty(nextDifficulty) {
   difficultyKey = nextDifficulty;
   state = createGameState(0, state.character, { difficultyKey });
-  currentEvent = "start";
   render();
 }
 
@@ -399,7 +364,6 @@ difficultyButtons.forEach((button) => {
 
 nextLevelBtn.addEventListener("click", () => {
   state = nextLevelState(state);
-  currentEvent = "next";
   render();
 });
 
