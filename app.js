@@ -1,4 +1,4 @@
-import { createGameState, getBoardRows, movePlayer, nextLevelState } from "./gameLogic.mjs";
+import { createGameState, getBoardRows, movePlayer, nextLevelState } from "./gameLogic.js";
 
 const ui = {
   zh: {

@@ -43,7 +43,7 @@ Players can help a `little mouse` or `little bear` escape a funny maze. Along th
 使用 Node 內建測試：
 
 ```powershell
-node --test .\gameLogic.test.mjs
+node --test .\gameLogic.test.js
 ```
 
 測試會檢查：

@@ -1,0 +1,8 @@
+{
+  "name": "maze-game-kids",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test .\\gameLogic.test.js"
+  }
+}

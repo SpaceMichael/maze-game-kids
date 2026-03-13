@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createGameState, generateMazeLevel, movePlayer, nextLevelState } from "./gameLogic.mjs";
+import { createGameState, generateMazeLevel, movePlayer, nextLevelState } from "./gameLogic.js";
 
 function findMarker(rows, marker) {
   for (let row = 0; row < rows.length; row += 1) {
