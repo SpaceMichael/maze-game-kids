@@ -2,11 +2,11 @@
 
 這是一個給 `3-6` 歲小朋友玩的迷宮網站遊戲。
 
-玩家可以選擇幫 `小老鼠` 或 `小熊` 逃出迷宮。路上有搞笑的 `噴水陷阱`，一踩中就會被噴濕，然後回到起點重新挑戰。
+玩家可以選擇幫 `小老鼠` 或 `小熊` 逃出迷宮。路上有搞笑的 `噴水陷阱`，一踩中就會被噴濕，然後回到起點重新挑戰。現在每次開始都會 `隨機生成新迷宮`，而且保證 `一定可以走到出口`；過關後下一個迷宮也會變得更大。
 
 This is a kid-friendly maze website for ages `3-6`.
 
-Players can help a `little mouse` or `little bear` escape a funny maze. Along the way, silly `water traps` may splash them and send them back to the start.
+Players can help a `little mouse` or `little bear` escape a funny maze. Along the way, silly `water traps` may splash them and send them back to the start. Every run now creates a `random maze`, it is always `solvable`, and each win unlocks a `bigger maze`.
 
 ## 功能
 
@@ -14,6 +14,8 @@ Players can help a `little mouse` or `little bear` escape a funny maze. Along th
 - 中文 / English 即時切換
 - 大按鈕和方向鍵控制
 - 三個固定迷宮關卡
+- 每次都會隨機生成可通關迷宮
+- 過關後迷宮會變大
 - 噴水陷阱、起點與出口
 - 適合幼兒的可愛視覺風格
 - 手機畫面優化，按鈕和迷宮格更易操作
@@ -28,6 +30,7 @@ Players can help a `little mouse` or `little bear` escape a funny maze. Along th
 5. 到達 `🧀` 或 `🍯` 就可以過關
 6. 可按「開啟背景音效」播放輕鬆搞笑背景音樂
 7. 可隨時切換 `中文 / English`
+8. 過關後按更大迷宮，會自動生成更大的新地圖
 
 ## GitHub Pages
 
@@ -40,6 +43,12 @@ Players can help a `little mouse` or `little bear` escape a funny maze. Along th
 ```powershell
 node --test .\gameLogic.test.mjs
 ```
+
+測試會檢查：
+
+- 隨機生成的迷宮是否仍然有路到出口
+- 撞牆、踩陷阱、到達出口是否正常
+- 過關後下一關是否真的變大
 
 ## 適合用途
 

@@ -1,42 +1,3 @@
-export const LEVELS = [
-  {
-    name: "Giggle Garden",
-    rows: [
-      "#######",
-      "#S...T#",
-      "#.#.#.#",
-      "#.#...#",
-      "#.###.#",
-      "#....G#",
-      "#######"
-    ]
-  },
-  {
-    name: "Splashy Tunnel",
-    rows: [
-      "########",
-      "#S..#..#",
-      "#.#.#T.#",
-      "#.#...##",
-      "#.###..#",
-      "#...#G.#",
-      "########"
-    ]
-  },
-  {
-    name: "Jelly Castle",
-    rows: [
-      "#########",
-      "#S....#G#",
-      "#.###.#.#",
-      "#...#...#",
-      "###.#.###",
-      "#T..#...#",
-      "#########"
-    ]
-  }
-];
-
 export const DIRECTION_DELTAS = {
   up: { row: -1, col: 0 },
   down: { row: 1, col: 0 },
@@ -44,16 +5,24 @@ export const DIRECTION_DELTAS = {
   right: { row: 0, col: 1 }
 };
 
+const MIN_SIZE = 7;
+const MAX_SIZE = 17;
+
 function clonePosition(position) {
   return { row: position.row, col: position.col };
 }
 
-function findMarker(rows, marker) {
-  for (let row = 0; row < rows.length; row += 1) {
-    const col = rows[row].indexOf(marker);
-    if (col !== -1) return { row, col };
+function createWallGrid(size) {
+  return Array.from({ length: size }, () => Array(size).fill("#"));
+}
+
+function shuffle(items, random = Math.random) {
+  const list = [...items];
+  for (let index = list.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [list[index], list[swapIndex]] = [list[swapIndex], list[index]];
   }
-  throw new Error(`Marker ${marker} not found`);
+  return list;
 }
 
 function readTile(rows, position) {
@@ -68,25 +37,130 @@ function readTile(rows, position) {
   return rows[position.row][position.col];
 }
 
-export function createGameState(levelIndex = 0, character = "mouse") {
-  const level = LEVELS[levelIndex];
-  if (!level) throw new Error(`Unknown level index: ${levelIndex}`);
+function sizeForStage(stage) {
+  return Math.min(MIN_SIZE + stage * 2, MAX_SIZE);
+}
 
-  const start = findMarker(level.rows, "S");
+function findMarker(rows, marker) {
+  for (let row = 0; row < rows.length; row += 1) {
+    const col = rows[row].indexOf(marker);
+    if (col !== -1) return { row, col };
+  }
+  throw new Error(`Marker ${marker} not found`);
+}
+
+function listPathCells(rows) {
+  const cells = [];
+  rows.forEach((row, rowIndex) => {
+    [...row].forEach((tile, colIndex) => {
+      if (tile !== "#") {
+        cells.push({ row: rowIndex, col: colIndex, tile });
+      }
+    });
+  });
+  return cells;
+}
+
+export function generateMazeLevel(stage = 0, random = Math.random) {
+  const size = sizeForStage(stage);
+  const grid = createWallGrid(size);
+  const stack = [{ row: 1, col: 1 }];
+
+  grid[1][1] = ".";
+
+  while (stack.length > 0) {
+    const current = stack[stack.length - 1];
+    const directions = shuffle(
+      [
+        { row: -2, col: 0 },
+        { row: 2, col: 0 },
+        { row: 0, col: -2 },
+        { row: 0, col: 2 }
+      ],
+      random
+    );
+
+    const next = directions.find((direction) => {
+      const nextRow = current.row + direction.row;
+      const nextCol = current.col + direction.col;
+      return (
+        nextRow > 0 &&
+        nextRow < size - 1 &&
+        nextCol > 0 &&
+        nextCol < size - 1 &&
+        grid[nextRow][nextCol] === "#"
+      );
+    });
+
+    if (!next) {
+      stack.pop();
+      continue;
+    }
+
+    const wallRow = current.row + next.row / 2;
+    const wallCol = current.col + next.col / 2;
+    const nextRow = current.row + next.row;
+    const nextCol = current.col + next.col;
+
+    grid[wallRow][wallCol] = ".";
+    grid[nextRow][nextCol] = ".";
+    stack.push({ row: nextRow, col: nextCol });
+  }
+
+  grid[1][1] = "S";
+  grid[size - 2][size - 2] = "G";
+
+  const rows = grid.map((row) => row.join(""));
+  const floorCells = listPathCells(rows).filter(({ tile, row, col }) => {
+    return tile === "." && !(row === 1 && col === 1) && !(row === size - 2 && col === size - 2);
+  });
+
+  const trapCount = Math.min(Math.max(1, Math.floor(stage / 2) + 1), Math.max(1, Math.floor(floorCells.length / 8)));
+  shuffle(floorCells, random)
+    .slice(0, trapCount)
+    .forEach(({ row, col }) => {
+      grid[row][col] = "T";
+    });
+
+  const finalRows = grid.map((row) => row.join(""));
   return {
-    levelIndex,
-    character,
-    position: clonePosition(start),
-    start,
-    rescued: false,
-    splashCount: 0,
-    steps: 0,
-    message: "Start the maze adventure!"
+    size,
+    rows: finalRows,
+    start: { row: 1, col: 1 },
+    goal: { row: size - 2, col: size - 2 }
   };
 }
 
+export function createGameState(stage = 0, character = "mouse", options = {}) {
+  const level = options.rows
+    ? {
+        rows: options.rows,
+        start: findMarker(options.rows, "S"),
+        goal: findMarker(options.rows, "G"),
+        size: options.rows.length
+      }
+    : generateMazeLevel(stage, options.random);
+
+  return {
+    levelIndex: stage,
+    character,
+    rows: level.rows,
+    size: level.size,
+    position: clonePosition(level.start),
+    start: clonePosition(level.start),
+    goal: clonePosition(level.goal),
+    rescued: false,
+    splashCount: 0,
+    steps: 0
+  };
+}
+
+export function getBoardRows(state) {
+  return state.rows;
+}
+
 export function getTileForState(state, position = state.position) {
-  return readTile(LEVELS[state.levelIndex].rows, position);
+  return readTile(state.rows, position);
 }
 
 export function movePlayer(state, direction) {
@@ -104,13 +178,7 @@ export function movePlayer(state, direction) {
 
   const tile = getTileForState(state, nextPosition);
   if (tile === "#") {
-    return {
-      state: {
-        ...state,
-        message: "Bonk! That wall is too bouncy."
-      },
-      event: "blocked"
-    };
+    return { state, event: "blocked" };
   }
 
   const movedState = {
@@ -124,8 +192,7 @@ export function movePlayer(state, direction) {
       state: {
         ...movedState,
         position: clonePosition(state.start),
-        splashCount: state.splashCount + 1,
-        message: "Splash! A silly water trap sent you back to start."
+        splashCount: state.splashCount + 1
       },
       event: "trap"
     };
@@ -135,29 +202,18 @@ export function movePlayer(state, direction) {
     return {
       state: {
         ...movedState,
-        rescued: true,
-        message: "Yay! You found the funny maze exit."
+        rescued: true
       },
       event: "win"
     };
   }
 
   return {
-    state: {
-      ...movedState,
-      message: "Keep going. The exit is near!"
-    },
+    state: movedState,
     event: "moved"
   };
 }
 
 export function nextLevelState(state) {
-  const nextIndex = (state.levelIndex + 1) % LEVELS.length;
-  return createGameState(nextIndex, state.character);
-}
-
-export function getBoardRows(levelIndex) {
-  const level = LEVELS[levelIndex];
-  if (!level) throw new Error(`Unknown level index: ${levelIndex}`);
-  return level.rows;
+  return createGameState(state.levelIndex + 1, state.character);
 }

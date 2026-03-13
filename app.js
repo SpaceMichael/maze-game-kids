@@ -1,23 +1,13 @@
-import {
-  LEVELS,
-  createGameState,
-  getBoardRows,
-  movePlayer,
-  nextLevelState
-} from "./gameLogic.mjs";
-
-const levelNames = {
-  zh: ["嘻哈花園", "噴水地道", "啫喱城堡"],
-  en: ["Giggle Garden", "Splashy Tunnel", "Jelly Castle"]
-};
+import { createGameState, getBoardRows, movePlayer, nextLevelState } from "./gameLogic.mjs";
 
 const ui = {
   zh: {
     pageTitle: "搞笑迷宮大逃走",
-    pageIntro: "適合 3-6 歲小朋友的迷宮遊戲。幫小老鼠或小熊逃出迷宮，小心路上的噴水陷阱，一被噴中就會「哈哈哈」濕身回到起點！",
+    pageIntro: "適合 3-6 歲小朋友的迷宮遊戲。每次都會隨機生成新迷宮，而且一定可以到出口。過關之後迷宮會變得更大！",
     characterTitle: "選擇主角",
     characters: {
       mouse: {
+        emoji: "🐭",
         buttonName: "🐭 小老鼠米米",
         buttonDesc: "跑得快，最愛起司。",
         heroName: "小老鼠米米",
@@ -25,6 +15,7 @@ const ui = {
         goal: "起司出口"
       },
       bear: {
+        emoji: "🐻",
         buttonName: "🐻 小熊波波",
         buttonDesc: "圓滾滾，也想安全出迷宮。",
         heroName: "小熊波波",
@@ -35,11 +26,11 @@ const ui = {
     stepsLabel: "步數",
     splashLabel: "被噴中",
     tipsTitle: "搞笑提示",
-    mazeTitle: "迷宮地圖",
+    mazeTitle: "隨機迷宮地圖",
     controlsTitle: "移動主角",
     controlsNote: "也可以用鍵盤方向鍵操作。",
     reset: "重新開始這關",
-    nextLevel: "下一關",
+    nextLevel: "更大迷宮",
     musicOn: "開啟背景音效",
     musicOff: "關閉背景音效",
     legendWall: "🌳 牆",
@@ -48,25 +39,27 @@ const ui = {
     legendGoal: "🧀/🍯 出口",
     boardLabel: "迷宮",
     messages: {
-      start: "準備好了嗎？笑住出發！",
+      start: "準備好了嗎？新迷宮已經出現！",
       moved: "繼續前進，出口就在附近！",
       blocked: "哎呀，撞到牆了，轉個方向吧！",
       trap: "Splash！被噴到全身濕晒，回起點再來！",
-      win: "哈哈，成功逃出迷宮！",
-      next: "新迷宮來了，出發！",
+      win: "哈哈，成功逃出迷宮！下一關會更大！",
+      next: "新迷宮來了，而且更大更刺激！",
       restart: "重新來過，小心不要踩到水陷阱！"
     },
     resultIdle: "繼續前進，別被噴濕！",
     resultWin: "哈哈，成功逃出迷宮！",
     goalPrefix: "目標：",
-    levelCounter: "第 {current} / {total} 關"
+    stageCounter: "第 {current} 關",
+    sizeCounter: "迷宮大小 {size} x {size}"
   },
   en: {
     pageTitle: "Funny Maze Escape",
-    pageIntro: "A silly maze game for kids aged 3-6. Help the little mouse or little bear escape, and watch out for splashy water traps that send them giggling back to the start!",
+    pageIntro: "A silly maze game for kids aged 3-6. A brand-new maze is generated every time, it always has a path to the exit, and each win makes the next maze bigger!",
     characterTitle: "Choose a Hero",
     characters: {
       mouse: {
+        emoji: "🐭",
         buttonName: "🐭 Mimi the Mouse",
         buttonDesc: "Fast feet and a big love for cheese.",
         heroName: "Mimi the Mouse",
@@ -74,6 +67,7 @@ const ui = {
         goal: "cheese exit"
       },
       bear: {
+        emoji: "🐻",
         buttonName: "🐻 Bobo the Bear",
         buttonDesc: "Round and cuddly, ready to escape safely.",
         heroName: "Bobo the Bear",
@@ -84,11 +78,11 @@ const ui = {
     stepsLabel: "Steps",
     splashLabel: "Splashes",
     tipsTitle: "Funny Tips",
-    mazeTitle: "Maze Map",
+    mazeTitle: "Random Maze Map",
     controlsTitle: "Move the Hero",
     controlsNote: "You can also use the arrow keys on a keyboard.",
     reset: "Restart Level",
-    nextLevel: "Next Level",
+    nextLevel: "Bigger Maze",
     musicOn: "Turn On Music",
     musicOff: "Turn Off Music",
     legendWall: "🌳 Wall",
@@ -97,18 +91,19 @@ const ui = {
     legendGoal: "🧀/🍯 Goal",
     boardLabel: "maze",
     messages: {
-      start: "Ready? Let the silly escape begin!",
+      start: "Ready? A fresh maze is waiting!",
       moved: "Keep going. The exit is nearby!",
       blocked: "Boing! That wall says no way.",
       trap: "Splash! The water trap sent you back to start.",
-      win: "Hooray! You escaped the maze!",
-      next: "A new maze is ready. Let's go!",
+      win: "Hooray! You escaped. The next maze will be bigger!",
+      next: "A bigger maze is ready. Let's go!",
       restart: "Fresh start! Try to stay dry this time."
     },
     resultIdle: "Keep moving and stay dry!",
     resultWin: "Hooray! You escaped the maze!",
     goalPrefix: "Goal: ",
-    levelCounter: "Level {current} / {total}"
+    stageCounter: "Stage {current}",
+    sizeCounter: "Maze size {size} x {size}"
   }
 };
 
@@ -191,7 +186,7 @@ function renderStaticText() {
 
 function renderBoard() {
   const hero = getCopy().characters[state.character];
-  const rows = getBoardRows(state.levelIndex);
+  const rows = getBoardRows(state);
   boardEl.innerHTML = "";
   boardEl.style.setProperty("--cols", rows[0].length);
 
@@ -220,7 +215,7 @@ function renderBoard() {
 
       if (isPlayer) {
         cell.classList.add("player");
-        cell.textContent = hero.buttonName.split(" ")[0];
+        cell.textContent = hero.emoji;
       }
 
       boardEl.appendChild(cell);
@@ -231,10 +226,7 @@ function renderBoard() {
 function renderStatus() {
   const text = getCopy();
   const hero = text.characters[state.character];
-  levelNameEl.textContent = `${levelNames[lang][state.levelIndex]} · ${format(text.levelCounter, {
-    current: state.levelIndex + 1,
-    total: LEVELS.length
-  })}`;
+  levelNameEl.textContent = `${format(text.stageCounter, { current: state.levelIndex + 1 })} · ${format(text.sizeCounter, { size: state.size })}`;
   heroNameEl.textContent = hero.heroName;
   heroIntroEl.textContent = `${hero.intro} ${text.goalPrefix}${hero.goal}`;
   stepsEl.textContent = state.steps;

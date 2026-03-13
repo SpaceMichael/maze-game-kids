@@ -193,13 +193,15 @@ body::after {
 .board {
   --cols: 7;
   display: grid;
-  grid-template-columns: repeat(var(--cols), minmax(38px, 1fr));
-  gap: 8px;
-  padding: 16px;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  gap: 6px;
+  padding: 12px;
   background: linear-gradient(180deg, #e9fbff, #fff8df);
   border-radius: 24px;
   position: relative;
   overflow: hidden;
+  width: min(100%, 640px);
+  margin: 0 auto;
 }
 
 .board::after {
@@ -223,7 +225,7 @@ body::after {
   display: grid;
   place-items: center;
   border-radius: 18px;
-  font-size: clamp(1.2rem, 3vw, 2rem);
+  font-size: clamp(0.8rem, 2.2vw, 1.65rem);
   font-weight: 700;
 }
 
@@ -358,11 +360,12 @@ body::after {
     gap: 4px;
     padding: 8px;
     border-radius: 18px;
+    width: 100%;
   }
 
   .cell {
     border-radius: 12px;
-    font-size: clamp(1rem, 5vw, 1.4rem);
+    font-size: clamp(0.72rem, 4.2vw, 1.1rem);
   }
 
   .legend {
