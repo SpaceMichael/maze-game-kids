@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Funny Maze Escape</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <h1>搞笑迷宮大逃走</h1>
+      <p>
+        適合 3-6 歲小朋友的迷宮遊戲。幫小老鼠或小熊逃出迷宮，小心路上的噴水陷阱，
+        一被噴中就會「哈哈哈」濕身回到起點！
+      </p>
+    </section>
+
+    <section class="layout">
+      <div class="sidebar">
+        <section class="panel">
+          <h2>選擇主角</h2>
+          <div class="character-list">
+            <button class="character-btn active" type="button" data-character="mouse">
+              <strong>🐭 小老鼠米米</strong>
+              <div>跑得快，最愛起司。</div>
+            </button>
+            <button class="character-btn" type="button" data-character="bear">
+              <strong>🐻 小熊波波</strong>
+              <div>圓滾滾，也想安全出迷宮。</div>
+            </button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2 id="heroName"></h2>
+          <p id="heroIntro"></p>
+          <div class="metrics">
+            <div class="metric">
+              <strong id="steps">0</strong>
+              <span>步數</span>
+            </div>
+            <div class="metric">
+              <strong id="splashCount">0</strong>
+              <span>被噴中</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>搞笑提示</h2>
+          <div class="message" id="message"></div>
+          <div class="result" id="result"></div>
+        </section>
+      </div>
+
+      <div class="play-area">
+        <section class="maze-card">
+          <div class="maze-header">
+            <div>
+              <h2>迷宮地圖</h2>
+              <p id="levelName"></p>
+            </div>
+            <div class="legend">
+              <span>🌳 牆</span>
+              <span>💦 陷阱</span>
+              <span>🏁 起點</span>
+              <span>🧀/🍯 出口</span>
+            </div>
+          </div>
+          <div class="board" id="board" aria-label="迷宮"></div>
+        </section>
+
+        <section class="controls">
+          <h2>移動主角</h2>
+          <div class="pad">
+            <div class="spacer"></div>
+            <button class="arrow-btn" type="button" data-dir="up" aria-label="向上">⬆️</button>
+            <div class="spacer"></div>
+            <button class="arrow-btn" type="button" data-dir="left" aria-label="向左">⬅️</button>
+            <button class="arrow-btn" type="button" data-dir="down" aria-label="向下">⬇️</button>
+            <button class="arrow-btn" type="button" data-dir="right" aria-label="向右">➡️</button>
+          </div>
+          <div class="actions">
+            <button class="action-btn secondary" type="button" id="resetBtn">重新開始這關</button>
+            <button class="action-btn" type="button" id="nextLevelBtn" disabled>下一關</button>
+          </div>
+          <p>也可以用鍵盤方向鍵操作。</p>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

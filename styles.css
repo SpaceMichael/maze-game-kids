@@ -1,0 +1,315 @@
+:root {
+  --bg: #fff8e7;
+  --ink: #29414f;
+  --accent: #ff8b6a;
+  --accent-2: #55a5ff;
+  --card: rgba(255, 255, 255, 0.82);
+  --shadow: 0 18px 36px rgba(41, 65, 79, 0.18);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Segoe UI", Arial, sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 15% 12%, #ffe68d 0 8%, transparent 9%),
+    radial-gradient(circle at 85% 18%, #b8e8ff 0 10%, transparent 11%),
+    linear-gradient(180deg, #dff6ff 0%, #fdf7dd 46%, #f8d59d 100%);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 180px;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 8% 100%, #7acc6b 0 20%, transparent 21%),
+    radial-gradient(circle at 24% 100%, #66bf59 0 18%, transparent 19%),
+    radial-gradient(circle at 42% 100%, #84d97b 0 22%, transparent 23%),
+    radial-gradient(circle at 65% 100%, #66bf59 0 20%, transparent 21%),
+    radial-gradient(circle at 84% 100%, #7acc6b 0 22%, transparent 23%);
+}
+
+.page {
+  width: min(1120px, calc(100% - 24px));
+  margin: 18px auto 28px;
+  display: grid;
+  gap: 18px;
+}
+
+.hero,
+.panel,
+.maze-card,
+.controls {
+  background: var(--card);
+  border-radius: 26px;
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+.hero {
+  padding: 22px;
+  display: grid;
+  gap: 14px;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3.1rem);
+  color: #ff7043;
+}
+
+.hero p {
+  margin: 0;
+  line-height: 1.7;
+  font-size: 1.05rem;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 18px;
+}
+
+.sidebar,
+.play-area {
+  display: grid;
+  gap: 18px;
+}
+
+.panel,
+.maze-card,
+.controls {
+  padding: 20px;
+}
+
+.panel h2,
+.maze-card h2,
+.controls h2 {
+  margin: 0 0 12px;
+  font-size: 1.1rem;
+}
+
+.character-list {
+  display: grid;
+  gap: 10px;
+}
+
+.character-btn,
+.arrow-btn,
+.action-btn {
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  border-radius: 18px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.character-btn:hover,
+.arrow-btn:hover,
+.action-btn:hover {
+  transform: translateY(-2px);
+}
+
+.character-btn {
+  padding: 14px;
+  background: white;
+  text-align: left;
+  box-shadow: 0 8px 16px rgba(41, 65, 79, 0.08);
+}
+
+.character-btn.active {
+  background: linear-gradient(135deg, #ffb180, #ff8b6a);
+  color: white;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.metric {
+  padding: 14px;
+  background: white;
+  border-radius: 18px;
+  text-align: center;
+}
+
+.metric strong {
+  display: block;
+  font-size: 1.5rem;
+  color: var(--accent-2);
+}
+
+.message,
+.result {
+  background: rgba(255, 255, 255, 0.86);
+  padding: 14px;
+  border-radius: 18px;
+  line-height: 1.6;
+}
+
+.maze-card {
+  display: grid;
+  gap: 16px;
+}
+
+.maze-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.maze-header p {
+  margin: 0;
+}
+
+.board {
+  --cols: 7;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(38px, 1fr));
+  gap: 8px;
+  padding: 16px;
+  background: linear-gradient(180deg, #e9fbff, #fff8df);
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.board::after {
+  content: "💧";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 5rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.board.splashed::after {
+  opacity: 0.22;
+}
+
+.cell {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  font-size: clamp(1.2rem, 3vw, 2rem);
+  font-weight: 700;
+}
+
+.wall {
+  background: linear-gradient(145deg, #69bf58, #3b9447);
+}
+
+.path {
+  background: rgba(255, 255, 255, 0.65);
+  color: rgba(41, 65, 79, 0.3);
+}
+
+.start {
+  background: linear-gradient(145deg, #fff7a6, #ffd666);
+}
+
+.goal {
+  background: linear-gradient(145deg, #ffd3a7, #ff9a76);
+}
+
+.trap {
+  background: linear-gradient(145deg, #b4efff, #6bc6ff);
+}
+
+.player {
+  box-shadow: 0 10px 18px rgba(41, 65, 79, 0.18);
+  transform: scale(1.02);
+}
+
+.controls {
+  display: grid;
+  gap: 14px;
+}
+
+.pad {
+  width: min(320px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.arrow-btn {
+  min-height: 60px;
+  background: white;
+  box-shadow: 0 10px 18px rgba(41, 65, 79, 0.08);
+  font-size: 1.7rem;
+}
+
+.pad .spacer {
+  min-height: 60px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.action-btn {
+  padding: 12px 18px;
+  background: linear-gradient(135deg, #6db8ff, #5e87ff);
+  color: white;
+}
+
+.action-btn.secondary {
+  background: linear-gradient(135deg, #ffcc80, #ff9f68);
+}
+
+.action-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 540px) {
+  .panel,
+  .maze-card,
+  .controls,
+  .hero {
+    padding: 16px;
+  }
+
+  .board {
+    gap: 6px;
+    padding: 12px;
+  }
+}
