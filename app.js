@@ -5,6 +5,12 @@ const ui = {
     pageTitle: "搞笑迷宮大逃走",
     pageIntro: "適合 3-6 歲小朋友的迷宮遊戲。每次都會隨機生成新迷宮，而且一定可以到出口。過關之後迷宮會變得更大！",
     characterTitle: "選擇主角",
+    difficultyTitle: "選擇難度",
+    difficulties: {
+      easy: { name: "簡單", desc: "較小迷宮，較少陷阱。" },
+      normal: { name: "普通", desc: "平衡大小與陷阱。" },
+      hard: { name: "困難", desc: "更大迷宮，更多陷阱。" }
+    },
     characters: {
       mouse: {
         emoji: "🐭",
@@ -57,6 +63,12 @@ const ui = {
     pageTitle: "Funny Maze Escape",
     pageIntro: "A silly maze game for kids aged 3-6. A brand-new maze is generated every time, it always has a path to the exit, and each win makes the next maze bigger!",
     characterTitle: "Choose a Hero",
+    difficultyTitle: "Choose Difficulty",
+    difficulties: {
+      easy: { name: "Easy", desc: "Smaller mazes with fewer traps." },
+      normal: { name: "Normal", desc: "Balanced size and trap count." },
+      hard: { name: "Hard", desc: "Bigger mazes with more traps." }
+    },
     characters: {
       mouse: {
         emoji: "🐭",
@@ -108,7 +120,8 @@ const ui = {
 };
 
 let lang = "zh";
-let state = createGameState(0, "mouse");
+let difficultyKey = "easy";
+let state = createGameState(0, "mouse", { difficultyKey });
 let splashOverlayTimer = null;
 let audioCtx = null;
 let musicEnabled = false;
@@ -118,6 +131,13 @@ let currentEvent = "start";
 const pageTitleEl = document.getElementById("pageTitle");
 const pageIntroEl = document.getElementById("pageIntro");
 const characterTitleEl = document.getElementById("characterTitle");
+const difficultyTitleEl = document.getElementById("difficultyTitle");
+const easyNameEl = document.getElementById("easyName");
+const easyDescEl = document.getElementById("easyDesc");
+const normalNameEl = document.getElementById("normalName");
+const normalDescEl = document.getElementById("normalDesc");
+const hardNameEl = document.getElementById("hardName");
+const hardDescEl = document.getElementById("hardDesc");
 const mouseNameEl = document.getElementById("mouseName");
 const mouseDescEl = document.getElementById("mouseDesc");
 const bearNameEl = document.getElementById("bearName");
@@ -146,6 +166,7 @@ const musicToggleBtn = document.getElementById("musicToggleBtn");
 const langZhBtn = document.getElementById("langZhBtn");
 const langEnBtn = document.getElementById("langEnBtn");
 const characterButtons = [...document.querySelectorAll("[data-character]")];
+const difficultyButtons = [...document.querySelectorAll("[data-difficulty]")];
 const controlButtons = [...document.querySelectorAll("[data-dir]")];
 
 function format(template, values) {
@@ -162,6 +183,13 @@ function renderStaticText() {
   pageTitleEl.textContent = text.pageTitle;
   pageIntroEl.textContent = text.pageIntro;
   characterTitleEl.textContent = text.characterTitle;
+  difficultyTitleEl.textContent = text.difficultyTitle;
+  easyNameEl.textContent = text.difficulties.easy.name;
+  easyDescEl.textContent = text.difficulties.easy.desc;
+  normalNameEl.textContent = text.difficulties.normal.name;
+  normalDescEl.textContent = text.difficulties.normal.desc;
+  hardNameEl.textContent = text.difficulties.hard.name;
+  hardDescEl.textContent = text.difficulties.hard.desc;
   mouseNameEl.textContent = text.characters.mouse.buttonName;
   mouseDescEl.textContent = text.characters.mouse.buttonDesc;
   bearNameEl.textContent = text.characters.bear.buttonName;
@@ -182,6 +210,9 @@ function renderStaticText() {
   boardEl.setAttribute("aria-label", text.boardLabel);
   langZhBtn.classList.toggle("active", lang === "zh");
   langEnBtn.classList.toggle("active", lang === "en");
+  difficultyButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.difficulty === difficultyKey);
+  });
 }
 
 function renderBoard() {
@@ -331,13 +362,20 @@ function step(direction) {
 }
 
 function restartLevel() {
-  state = createGameState(state.levelIndex, state.character);
+  state = createGameState(state.levelIndex, state.character, { difficultyKey });
   currentEvent = "restart";
   render();
 }
 
 function chooseCharacter(character) {
-  state = createGameState(0, character);
+  state = createGameState(0, character, { difficultyKey });
+  currentEvent = "start";
+  render();
+}
+
+function chooseDifficulty(nextDifficulty) {
+  difficultyKey = nextDifficulty;
+  state = createGameState(0, state.character, { difficultyKey });
   currentEvent = "start";
   render();
 }
@@ -353,6 +391,10 @@ controlButtons.forEach((button) => {
 
 characterButtons.forEach((button) => {
   button.addEventListener("click", () => chooseCharacter(button.dataset.character));
+});
+
+difficultyButtons.forEach((button) => {
+  button.addEventListener("click", () => chooseDifficulty(button.dataset.difficulty));
 });
 
 nextLevelBtn.addEventListener("click", () => {

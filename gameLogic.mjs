@@ -8,6 +8,12 @@ export const DIRECTION_DELTAS = {
 const MIN_SIZE = 7;
 const MAX_SIZE = 17;
 
+export const DIFFICULTY_SETTINGS = {
+  easy: { stageOffset: 0, trapMultiplier: 0.75 },
+  normal: { stageOffset: 1, trapMultiplier: 1 },
+  hard: { stageOffset: 2, trapMultiplier: 1.35 }
+};
+
 function clonePosition(position) {
   return { row: position.row, col: position.col };
 }
@@ -41,6 +47,10 @@ function sizeForStage(stage) {
   return Math.min(MIN_SIZE + stage * 2, MAX_SIZE);
 }
 
+function resolveDifficulty(difficultyKey = "normal") {
+  return DIFFICULTY_SETTINGS[difficultyKey] || DIFFICULTY_SETTINGS.normal;
+}
+
 function findMarker(rows, marker) {
   for (let row = 0; row < rows.length; row += 1) {
     const col = rows[row].indexOf(marker);
@@ -61,8 +71,9 @@ function listPathCells(rows) {
   return cells;
 }
 
-export function generateMazeLevel(stage = 0, random = Math.random) {
-  const size = sizeForStage(stage);
+export function generateMazeLevel(stage = 0, random = Math.random, difficultyKey = "normal") {
+  const difficulty = resolveDifficulty(difficultyKey);
+  const size = sizeForStage(stage + difficulty.stageOffset);
   const grid = createWallGrid(size);
   const stack = [{ row: 1, col: 1 }];
 
@@ -115,7 +126,11 @@ export function generateMazeLevel(stage = 0, random = Math.random) {
     return tile === "." && !(row === 1 && col === 1) && !(row === size - 2 && col === size - 2);
   });
 
-  const trapCount = Math.min(Math.max(1, Math.floor(stage / 2) + 1), Math.max(1, Math.floor(floorCells.length / 8)));
+  const baseTrapCount = Math.max(1, Math.floor(stage / 2) + 1);
+  const trapCount = Math.min(
+    Math.max(1, Math.round(baseTrapCount * difficulty.trapMultiplier)),
+    Math.max(1, Math.floor(floorCells.length / 8))
+  );
   shuffle(floorCells, random)
     .slice(0, trapCount)
     .forEach(({ row, col }) => {
@@ -132,6 +147,7 @@ export function generateMazeLevel(stage = 0, random = Math.random) {
 }
 
 export function createGameState(stage = 0, character = "mouse", options = {}) {
+  const difficultyKey = options.difficultyKey || "normal";
   const level = options.rows
     ? {
         rows: options.rows,
@@ -139,10 +155,11 @@ export function createGameState(stage = 0, character = "mouse", options = {}) {
         goal: findMarker(options.rows, "G"),
         size: options.rows.length
       }
-    : generateMazeLevel(stage, options.random);
+    : generateMazeLevel(stage, options.random, difficultyKey);
 
   return {
     levelIndex: stage,
+    difficultyKey,
     character,
     rows: level.rows,
     size: level.size,
@@ -215,5 +232,7 @@ export function movePlayer(state, direction) {
 }
 
 export function nextLevelState(state) {
-  return createGameState(state.levelIndex + 1, state.character);
+  return createGameState(state.levelIndex + 1, state.character, {
+    difficultyKey: state.difficultyKey
+  });
 }

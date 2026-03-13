@@ -60,6 +60,7 @@ test("game starts at the generated start tile", () => {
   assert.deepEqual(state.position, state.start);
   assert.equal(state.character, "mouse");
   assert.equal(state.rows[1][1], "S");
+  assert.equal(state.difficultyKey, "normal");
 });
 
 test("walking into a wall keeps the same position", () => {
@@ -110,11 +111,18 @@ test("goal marks state as rescued", () => {
 });
 
 test("next level creates a bigger maze", () => {
-  const state = createGameState(0, "bear");
+  const state = createGameState(0, "bear", { difficultyKey: "easy" });
   const next = nextLevelState(state);
   assert.equal(next.levelIndex, 1);
   assert.equal(next.character, "bear");
   assert.equal(next.steps, 0);
   assert.equal(next.splashCount, 0);
   assert.equal(next.size > state.size, true);
+  assert.equal(next.difficultyKey, "easy");
+});
+
+test("hard difficulty starts with a bigger maze than easy", () => {
+  const easyState = createGameState(0, "mouse", { difficultyKey: "easy", random: () => 0.3 });
+  const hardState = createGameState(0, "mouse", { difficultyKey: "hard", random: () => 0.3 });
+  assert.equal(hardState.size > easyState.size, true);
 });

@@ -146,6 +146,10 @@ body::after {
   color: white;
 }
 
+.character-btn[data-difficulty].active {
+  background: linear-gradient(135deg, #7fb4ff, #5e87ff);
+}
+
 .metrics {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
